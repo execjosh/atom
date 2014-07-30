@@ -132,6 +132,8 @@ class Atom extends Model
 
     @loadTime = null
 
+    I18n = require './i18n'
+
     Config = require './config'
     KeymapManager = require './keymap-extensions'
     PackageManager = require './package-manager'
@@ -153,6 +155,7 @@ class Atom extends Model
     process.env.NODE_ENV ?= 'production' unless devMode
 
     @config = new Config({configDirPath, resourcePath})
+    @i18n = new I18n()
     @keymaps = new KeymapManager({configDirPath, resourcePath})
     @keymap = @keymaps # Deprecated
     @packages = new PackageManager({devMode, configDirPath, resourcePath, safeMode})

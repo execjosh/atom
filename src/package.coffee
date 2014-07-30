@@ -32,6 +32,7 @@ class Package
   menus: null
   stylesheets: null
   grammars: null
+  domain: null
   scopedProperties: null
   mainModulePath: null
   resolvedMainModulePath: false
@@ -67,6 +68,7 @@ class Package
         @loadKeymaps()
         @loadMenus()
         @loadStylesheets()
+        @loadLocales()
         @scopedPropertiesPromise = @loadScopedProperties()
         @requireMainModule() unless @hasActivationEvents()
 
@@ -79,6 +81,7 @@ class Package
     @keymaps = []
     @menus = []
     @grammars = []
+    @domain = {}
     @scopedProperties = []
 
   activate: ->
@@ -175,6 +178,11 @@ class Package
     else
       fs.listSync(stylesheetDirPath, ['css', 'less'])
 
+  loadLocales: ->
+    localesDirPath = path.join @path, 'locales'
+    @domain = atom.i18n.registerDomain @name, localesDirPath
+    return
+
   loadGrammarsSync: ->
     return if @grammarsLoaded
 
@@ -254,6 +262,7 @@ class Package
     scopedProperties.deactivate() for scopedProperties in @scopedProperties
     atom.keymaps.remove(keymapPath) for [keymapPath] in @keymaps
     atom.themes.removeStylesheet(stylesheetPath) for [stylesheetPath] in @stylesheets
+    atom.i18n.unregisterDomain(@domain.name)
     @stylesheetsActivated = false
     @grammarsActivated = false
     @scopedPropertiesActivated = false
@@ -272,6 +281,11 @@ class Package
     return unless @isCompatible()
     mainModulePath = @getMainModulePath()
     @mainModule = require(mainModulePath) if fs.isFileSync(mainModulePath)
+
+    if @mainModule?
+      @mainModule.i18n = @domain.toMinimalApi()
+
+    @mainModule
 
   getMainModulePath: ->
     return @mainModulePath if @resolvedMainModulePath
