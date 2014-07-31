@@ -93,7 +93,19 @@ module.exports =
 class I18n
   constructor: (opts={}) ->
     @domains = {}
-    @setLocale opts.locale
+
+    if opts.locale?
+      @setLocale opts.locale
+    else
+      locale = (new Intl.Collator()).resolvedOptions().locale
+      if locale?
+        # We only want language and territory
+        parts = locale.split(/-/)
+        locale = parts.slice(0, 2).join('_')
+        @setLocale locale
+      else
+        console.debug "Setting locale to default (#{DEFAULT_LOCALE})"
+        @setLocale DEFAULT_LOCALE
 
   registerDomain: (domainName, domainDirPath) ->
     # TODO handle re-registration of domain
